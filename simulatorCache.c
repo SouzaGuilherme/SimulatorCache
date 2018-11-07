@@ -124,6 +124,17 @@ void writeCache(int index, int i){
 		}
 	}else{
 		// Totalemnte Associativa
+		if (AcessCache->cache[0]['ultimaPosicao'] != NULL ){
+			// Cache cheia, logo escrevo numa posicao randomica
+			int positionRand = rand()%(AcessCache->numberSets);
+			AcessCache->cache[0][positionRand] = vetEnd[i];
+		}else{
+			for (int j = 1; j < 'totalassociativo'; ++j){
+				if (AcessCache->cahce[0][j] != NULL)
+					AcessCache->cahce[0][j] = vetEnd[i];
+			}
+		}
+
 	}
 		
 };
