@@ -77,13 +77,42 @@ void searchEnd(){
 				// Irei verificar em todas posicoes ao lado do bit de verificacao
 				if (AcessCache->cache[index][j] == vetEnd[i]){
 					AcessCache->hit++;
+				}else{
+					AcessCache->miss++;
+					// Tratar qual o miss
+					// Provavel miss de Conflito
+					// Escrever na cache o endereco que nao existe		
+					writeCache(index, i);
 				}
 			}
 		}else{
 			AcessCache->miss++;
 			// Tratar qual o miss
+			// Miss Compulsorio
 			// Escrever na cache o endereco que nao existe
+			writeCache(index, i);
 		}
 		i++;
 	}
+};
+
+void writeCache(int index, int i){
+	cacheConfig *AcessCache;
+	int vetEnd[5];	// isso vai sair daqui
+	// Seto o bit de verificacao para 1
+	AcessCache->cache[index][0] = 1;
+	if (AcessCache->associativity == 1){
+		// Mapeamento Direto
+		AcessCache->cache[index][1] = vetEnd[i];
+	}else if(AcessCache->associativity >1 && AcessCache->associativity <=4){
+		// Associatividade 2 e 4
+		for (int i = 0; i < AcessCache->associativity; ++i){
+			// Politica de substituicao Randomica
+			int j = rand()%(AcessCache->associativity+1);
+			AcessCache->cache[index][j] = vetEnd[i];
+		}
+	}else{
+		// Totalemnte Associativa
+	}
+		
 };
