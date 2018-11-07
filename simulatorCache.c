@@ -12,6 +12,9 @@ typedef struct cacheComplete{
 	int associativity;
 	int hit;
 	int miss;
+	int missCompulsorio;
+	int missConflito;
+	int missCapacidade;
 
 }cacheConfig;
 
@@ -81,6 +84,13 @@ void searchEnd(){
 					AcessCache->miss++;
 					// Tratar qual o miss
 					// Provavel miss de Conflito
+					if (AcessCache->associativity == 'totalassociativo'){
+						// Miss de capacidade
+						AcessCache->missCapacidade++;
+					}else{
+						// Miss de Conflito
+						AcessCache->missConflito++;
+					}
 					// Escrever na cache o endereco que nao existe		
 					writeCache(index, i);
 				}
@@ -89,6 +99,7 @@ void searchEnd(){
 			AcessCache->miss++;
 			// Tratar qual o miss
 			// Miss Compulsorio
+			AcessCache->missCompulsorio++;
 			// Escrever na cache o endereco que nao existe
 			writeCache(index, i);
 		}
