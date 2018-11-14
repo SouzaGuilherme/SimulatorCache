@@ -129,7 +129,7 @@ void searchEnd(cacheConfig *AcessCache){
 	int flagEncontrouEnd = 0;
 	int vetEnd[5]; 
 	vetEnd[0] = 1024;	// isso vai vim por parametro
-	vetEnd[1] = 4096;	// isso vai vim por parametro
+	vetEnd[1] = 10;	// isso vai vim por parametro
 	vetEnd[2] = 10;	// isso vai vim por parametro
 	vetEnd[3] = 10;	// isso vai vim por parametro
 	vetEnd[4] = 2048;	// isso vai vim por parametro
