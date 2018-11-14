@@ -7,17 +7,16 @@
 // #include <conio.h>
 #include "library.h"
 
-long unsigned int* enderecos(void){
-	long unsigned int *p, vetEnd[100];
-	int j=0;
+long unsigned int* enderecos(long unsigned int* p){
+	long unsigned int vetEnd[100];
 	for (int i = 0; i < 100; ++i)
 		vetEnd[i]=-1;
 	for (int i = 0; i < 100; ++i){
-		long unsigned int elev = rand()%100;
+		int elev = 1+(rand()%10);
 		vetEnd[i] = elev;
 		// printf("TA EM -%d\n", j);
-		j++;
-		printf("vetEnd[%lu]\n", vetEnd[i]);
+		// j++;
+		// printf("vetEnd[%d] = %lu\n", j, vetEnd[i]);
 	}
 	p = &vetEnd[0];
 	return p;
@@ -33,8 +32,7 @@ int main(int argc, char* argv[]){
 		strncpy(AcessCache.nameArq, argv[4], 20);
 
 		// Inicio a cache
-		startCache(&AcessCache);
-		
+		startCache(&AcessCache);		
 	}else{
 		AcessCache.numberSets = 1024;
 		AcessCache.blockSize = 4;
@@ -53,12 +51,15 @@ int main(int argc, char* argv[]){
 	// Gero os enderecos
 
 	//Le os enderecos passados o os converte para inteiros
-	long unsigned int *p = enderecos();// Nao sei se pode mas receberia o retorno com a quantidade da funcao
+	long unsigned int *p;
+	p = enderecos(p);// Nao sei se pode mas receberia o retorno com a quantidade da funcao
 	int i=0, cont=0;
-	while(p[i] != NULL){
+	do{
 		cont++;
+		printf("Vetor[%d] = %lu\n", i, p[i]);
+		printf("CONT == %d\n", cont);
 		i++;
-	}
+	}while(i != 100 );
 
 	// Pesquiso o Endereco
 	searchEnd(&AcessCache, p, cont);

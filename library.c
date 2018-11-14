@@ -59,45 +59,34 @@ int* openReadArq(){
 
 
 void startCache(cacheConfig *AcessCache){
-	if (AcessCache->numberSets == AcessCache->associativity){
-		// Logo a cache e totalmente associativa
-		AcessCache->cache = (long unsigned int**) malloc(sizeof(long unsigned int*));
-		if (AcessCache->cache == NULL){
-	 		printf("Erro ao alocar Cache\n");
-	 		exit(1);
-		}
-		for (long unsigned int i = 0; i < AcessCache->numberSets+1; ++i)
-	 		AcessCache->cache[i] = (long unsigned int*) malloc(sizeof(long unsigned int));
-	}else{
-		AcessCache->cache = (long unsigned int**) malloc(((AcessCache->numberSets)/AcessCache->associativity)*sizeof(long unsigned int*));
-		if (AcessCache->cache == NULL){
-		 	printf("Erro ao alocar Cache\n");
-		 	exit(1);
-		}
-		
-		for (long unsigned int i = 0; i < AcessCache->numberSets+1; ++i)
-		 	AcessCache->cache[i] = (long unsigned int*) malloc(sizeof(long unsigned int));
-
+	AcessCache->cache = (long unsigned int**) malloc(((AcessCache->numberSets)/AcessCache->associativity)*sizeof(long unsigned int*));
+	if (AcessCache->cache == NULL){
+		printf("Erro ao alocar Cache\n");
+		exit(1);
 	}
+		
+	for (long unsigned int i = 0; i <= AcessCache->numberSets; ++i)
+	AcessCache->cache[i] = (long unsigned int*) malloc(sizeof(long unsigned int));
+
 	// Mexer aqui pois ira gerar vazamento de memoria;
 
 	for (long unsigned int i = 0; i < AcessCache->numberSets/AcessCache->associativity; ++i)
 		AcessCache->cache[i][0] = 0;
 
-	for (long unsigned int i = 1; i <= AcessCache->numberSets/AcessCache->associativity; ++i){
-		for (long unsigned int j = 1; i <= AcessCache->associativity; ++i){
+	for (long unsigned int i = 0; i < AcessCache->numberSets/AcessCache->associativity; ++i){
+		for (long unsigned int j = 1; j <= AcessCache->associativity; ++j)
 			AcessCache->cache[i][j] = -1;
-		}
 	}	
 };
 
 
 void searchEnd(cacheConfig *AcessCache, long unsigned int *vetEnd, int cont){
 	// Acesso o primeiro endereco
-	int index, i=0;
+	int index=0, i=0;
 	int flagEncontrouEnd = 0;
-	int NUMERO = cont;	// Saberei por parametro ? pois outra funcao ja sabera
-	while(i <= NUMERO){
+	int NUMERO = cont;	
+	while(i < NUMERO){
+		// Verifico se é totalmente associativa e arrumo o index
 		if (AcessCache->numberSets == AcessCache->associativity)
 			index = 0;
 		else
@@ -107,7 +96,7 @@ void searchEnd(cacheConfig *AcessCache, long unsigned int *vetEnd, int cont){
 			// Significa que ha um dado aqui dentro
 			for (int j = 1; j <= AcessCache->associativity; ++j){
 				// Irei verificar em todas posicoes ao lado do bit de verificacao
-				if (AcessCache->cache[index][j] == vetEnd[i]){
+				if (AcessCache->cache[index][j] == *(vetEnd+i)){
 					AcessCache->hit++;
 					flagEncontrouEnd = 1;
 					break;
@@ -117,7 +106,7 @@ void searchEnd(cacheConfig *AcessCache, long unsigned int *vetEnd, int cont){
 				AcessCache->miss++;
 				// Tratar qual o miss
 				if (AcessCache->numberSets == AcessCache->associativity){
-					if (AcessCache->cache[index][AcessCache->associativity+1] != -1)
+					if (AcessCache->cache[index][AcessCache->associativity] != -1)
 						// Miss de capacidade
 						AcessCache->missCapacidade++;
 					else
@@ -127,7 +116,7 @@ void searchEnd(cacheConfig *AcessCache, long unsigned int *vetEnd, int cont){
 					AcessCache->missConflito++;
 				}
 				// Escrever na cache o endereco que nao existe		
-				writeCache(AcessCache, index, vetEnd[i]);
+				writeCache(AcessCache, index, *(vetEnd+i));
 			}
 		}else{
 			AcessCache->miss++;
@@ -135,7 +124,7 @@ void searchEnd(cacheConfig *AcessCache, long unsigned int *vetEnd, int cont){
 			// Miss Compulsorio
 			AcessCache->missCompulsorio++;
 			// Escrever na cache o endereco que nao existe
-			writeCache(AcessCache, index, vetEnd[i]);
+			writeCache(AcessCache, index, *(vetEnd+i));
 		}
 		++i;
 	}
@@ -143,7 +132,8 @@ void searchEnd(cacheConfig *AcessCache, long unsigned int *vetEnd, int cont){
 
 
 long unsigned int indexMod(long unsigned int value, long unsigned int mod){
-	return value%mod;
+	long unsigned int auxMod = value%mod;
+	return auxMod;
 };
 
 
@@ -151,42 +141,77 @@ void writeCache(cacheConfig *AcessCache, long unsigned int index, long unsigned 
 	int flagInsertPosicionNull = 0;
 	// Seto o bit de verificacao para 1
 	AcessCache->cache[index][0] = 1;
-	if (AcessCache->associativity == 1){
-		// Mapeamento Direto
-		AcessCache->cache[index][1] = endValue;
-	}else if(AcessCache->associativity >1 && AcessCache->associativity <=4){
-		// Associatividade 2 e 4
-		// Enquanto tiver lugar ele insere
-		for (long unsigned int i = 0; i < AcessCache->associativity; ++i){
-			if (AcessCache->cache[index][i] == -1){
-				AcessCache->cache[index][i] = endValue;
+	if (AcessCache->numberSets == AcessCache->associativity){
+		// Cache Totalmente associativa
+		for (long unsigned int j = 1; j <= AcessCache->associativity; ++j){
+			if (AcessCache->cache[index][j] == -1){
+				// Achou local disponivel e armazenou
+				AcessCache->cache[index][j] = endValue;
 				flagInsertPosicionNull = 1;
 				break;
 			}
 		}
-		// Caso nao tenha lugar ele randoniza uma posicao e insere
-		if (flagInsertPosicionNull == 0){
-			int j = rand()%(AcessCache->associativity);
-			AcessCache->cache[index][j+1] = endValue;
-		}
-	}else{
-		// Totalmente Associativa
-		for (int j = 1; j <= AcessCache->associativity; ++j){
-			if (AcessCache->cache[0][j] != -1){
-				AcessCache->cache[0][j] = endValue;
-				flagInsertPosicionNull = 1;
-				break;
-			}
-		}
-		if (flagInsertPosicionNull == 0){
-			if (AcessCache->cache[0][AcessCache->associativity] != -1 ){
-				// Cache cheia, logo escrevo numa posicao randomica
-				long int positionRand = rand()%(AcessCache->associativity);
-				AcessCache->cache[0][positionRand] = endValue;
-			}
 
+		if (flagInsertPosicionNull == 0){
+			// Não tem lugar disponivel, aplica-se Rand
+			int positionRand = rand()%(AcessCache->associativity);
+			AcessCache->cache[0][positionRand] = endValue;
+		}
+	}else if (AcessCache->associativity == 1){
+		// Como e MP nao preciso percorrer as posicoes ao lado
+		AcessCache->cache[index][1] = endValue;
+	}else{
+		// Qualquer outra associatividade
+		for (long unsigned int k = 1; k <= AcessCache->associativity; ++k){
+			if (AcessCache->cache[index][k] == -1){
+				AcessCache->cache[index][k] = endValue;
+				flagInsertPosicionNull = 1;
+				break;
+			}
+		}
+		if (flagInsertPosicionNull == 0){
+			// Não tem lugar disponivel, aplica-se Rand
+			long int positionRand = rand()%(AcessCache->associativity);
+			AcessCache->cache[index][positionRand] = endValue;
 		}
 	}
+
+	// if (AcessCache->associativity == 1){
+	// 	// Mapeamento Direto
+	// 	AcessCache->cache[index][1] = endValue;
+	// }else if(AcessCache->associativity >1 && AcessCache->associativity <=4){
+	// 	// Associatividade 2 e 4
+	// 	// Enquanto tiver lugar ele insere
+	// 	for (long unsigned int i = 0; i < AcessCache->associativity; ++i){
+	// 		if (AcessCache->cache[index][i] == -1){
+	// 			AcessCache->cache[index][i] = endValue;
+	// 			flagInsertPosicionNull = 1;
+	// 			break;
+	// 		}
+	// 	}
+	// 	// Caso nao tenha lugar ele randoniza uma posicao e insere
+	// 	if (flagInsertPosicionNull == 0){
+	// 		int j = rand()%(AcessCache->associativity);
+	// 		AcessCache->cache[index][j+1] = endValue;
+	// 	}
+	// }else{
+	// 	// Totalmente Associativa
+	// 	for (int j = 1; j <= AcessCache->associativity; ++j){
+	// 		if (AcessCache->cache[0][j] != -1){
+	// 			AcessCache->cache[0][j] = endValue;
+	// 			flagInsertPosicionNull = 1;
+	// 			break;
+	// 		}
+	// 	}
+	// 	if (flagInsertPosicionNull == 0){
+	// 		if (AcessCache->cache[0][AcessCache->associativity] != -1 ){
+	// 			// Cache cheia, logo escrevo numa posicao randomica
+	// 			long int positionRand = rand()%(AcessCache->associativity);
+	// 			AcessCache->cache[0][positionRand] = endValue;
+	// 		}
+
+	// 	}
+	// }
 };
 
 
