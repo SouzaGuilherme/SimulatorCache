@@ -2,6 +2,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <math.h>
+#include <time.h>
 // #include <conio.h>
 // #include "library.h"
 
@@ -17,9 +19,18 @@ typedef struct cacheComplete{
 	int missCapacidade;
 	char nameArq[20];
 }cacheConfig;
-
+int* enderecos(){
+	int *p, vetEnd[100];
+	for (int i = 0; i < 100; ++i){
+		srand(time(NULL));
+		int elev = rand()%100;
+		vetEnd[i] = pow(2,elev);
+	}
+	p = &vetEnd[0];
+	return p;
+}
 void startCache(cacheConfig *AcessCache);
-void searchEnd(cacheConfig *AcessCache);
+void searchEnd(cacheConfig *AcessCache, int *vetEnd, int cont);
 int indexMod(int value, int mod);
 void writeCache(cacheConfig *AcessCache, int index, int endValue);
 void printResults(cacheConfig *AcessCache);
@@ -76,9 +87,20 @@ int main(int argc, char* argv[]){
 	AcessCache.missConflito = 0;	
 	AcessCache.missCapacidade = 0;	
 		
+	// Gero os enderecos
+
+	//Le os enderecos passados o os converte para inteiros
+	int *p = enderecos();// Nao sei se pode mas receberia o retorno com a quantidade da funcao
+	int i=0, cont=0;
+	while(p[i] != NULL){
+		cont++;
+		i++;
+	}
+	printf("CONT %d\n", cont);
+	printf("AIIII %d\n",p[99] );
 
 	// Pesquiso o Endereco
-	searchEnd(&AcessCache);
+	searchEnd(&AcessCache, p, cont);
 
 	// printo o resultado
 	printResults(&AcessCache); 
@@ -115,7 +137,7 @@ void startCache(cacheConfig *AcessCache){
 		 	AcessCache->cache[i] = (int*) malloc(sizeof(int));
 
 	}
-	// Mexer aqui pois gerara vazamento de memoria;
+	// Mexer aqui pois ira gerar vazamento de memoria;
 
 	for (int i = 0; i < AcessCache->numberSets/AcessCache->associativity; ++i)
 		AcessCache->cache[i][0] = 0;
@@ -123,29 +145,20 @@ void startCache(cacheConfig *AcessCache){
 	printf("ALOCOU TUDO\n");
 };
 
-void searchEnd(cacheConfig *AcessCache){
+void searchEnd(cacheConfig *AcessCache, int *vetEnd, int cont){
 	// Acesso o primeiro endereco
 	int index, i=0;
 	int flagEncontrouEnd = 0;
-	int vetEnd[5]; 
-	vetEnd[0] = 1024;	// isso vai vim por parametro
-	vetEnd[1] = 10;	// isso vai vim por parametro
-	vetEnd[2] = 10;	// isso vai vim por parametro
-	vetEnd[3] = 10;	// isso vai vim por parametro
-	vetEnd[4] = 2048;	// isso vai vim por parametro
-	int NUMERO = 5;	// Saberei por parametro ? pois outra funcao ja sabera
-	printf("Porta do while\n");
+	int NUMERO = cont;	// Saberei por parametro ? pois outra funcao ja sabera
 	while(i != NUMERO){
-		printf("Porta do index\n");
 		if (AcessCache->numberSets == AcessCache->associativity)
 			index = 0;
 		else
 			index = indexMod(vetEnd[i], AcessCache->numberSets/AcessCache->associativity);	// Criar essa funcao ainda
-		printf("Passou index\n");
 		// Verifico o Bit de Verificacao
 		if (AcessCache->cache[index][0] == 1){
 			// Significa que ha um dado aqui dentro
-			for (int j = 1; j < AcessCache->associativity+1; ++j){
+			for (int j = 1; j <= AcessCache->associativity; ++j){
 				// Irei verificar em todas posicoes ao lado do bit de verificacao
 				if (AcessCache->cache[index][j] == vetEnd[i]){
 					AcessCache->hit++;
@@ -177,8 +190,9 @@ void searchEnd(cacheConfig *AcessCache){
 			// Escrever na cache o endereco que nao existe
 			writeCache(AcessCache, index, vetEnd[i]);
 		}
+		printf("Antes ++i %d\n", i);
 		++i;
-		printf("Passou ++i %d\n", i);
+		printf("Depois ++i %d\n", i);
 	}
 };
 
@@ -207,11 +221,11 @@ void writeCache(cacheConfig *AcessCache, int index, int endValue){
 		}
 		// Caso nao tenha lugar ele randoniza uma posicao e insere
 		if (flagInsertPosicionNull == 0){
-			int j = rand()%(AcessCache->associativity+1);
-			AcessCache->cache[index][j] = endValue;
+			int j = rand()%(AcessCache->associativity);
+			AcessCache->cache[index][j+1] = endValue;
 		}
 	}else{
-		// Totalemnte Associativa
+		// Totalmente Associativa
 		for (int j = 1; j < AcessCache->associativity; ++j){
 			if (AcessCache->cache[0][j] != NULL){
 				AcessCache->cache[0][j] = endValue;
