@@ -6,97 +6,96 @@
 #include <stdlib.h>
 #include "library.h"
 
-int conversion (char bin[]){
-	unsigned long dec = 0;
-   	int i = 0;
-    int s;
-    //fgets( bin, sizeof(bin), stdin);
-    s = strlen( bin ); 
-    while( s-- ) {
-        if( bin[s] == '0' || bin[s] == '1' ) {
-            dec = dec + pow(2, i++) * (bin[s] - '0');
-        }
-    };
-   	// printf("\nDecimal Equivalent of Binary Number: \t %u\n", dec);
-    return dec;
+int conversion( int val ){
+    val = ((val << 8) & 0xFF00FF00) | ((val >> 8) & 0xFF00FF ); 
+    return (val << 16) | ((val >> 16) & 0xFFFF);
 };
 
-int* openReadArq(){
-	int cont=0;
-	char url[]="arqBinario2.dat",info[32];
-	FILE *arq;
+int* readEnd(cacheConfig *AcessCache){
+	FILE *arq;     
+	int numLinha;  
+	size_t result; 
+	int *p;
+	int numberEnd = 0;
 	
-	arq = fopen(url, "r");
-	if(arq == NULL)
-		printf("Erro, nao foi possivel abrir o arquivo\n");
-	else{
-		while( (fgets(info, sizeof(info), arq))!=NULL ){
-			cont++;
-		}		
+	arq = fopen(AcessCache->nameArq,"r");
+	if (!arq) {
+		printf("Erro na abertura do arquivo original.dat.\n");
+		exit(1);
 	}
+
+	for (int i = 1;!feof(arq); ++i) {
+		numLinha = 0;
+		
+		result = fread(&numLinha, 4, 1, arq); 
+		numberEnd++;
+	}
+	printf("NUMBER ENDS = %d\n",numberEnd);
+	AcessCache->operations = numberEnd-1;
 	fclose(arq);
-	
-	int vetIndex[cont];	
-	arq = fopen(url, "r");
-	if(arq == NULL)
-		printf("Erro, nao foi possivel abrir o arquivo\n");
-	else{
-		int i = 0;
-		while( (fgets(info, sizeof(info), arq))!=NULL ){
-			vetIndex[i] = conversion(info);
-			i++;
-			
+
+	arq = fopen(AcessCache->nameArq,"r");
+	if (!arq) {
+		printf("Erro na abertura do arquivo original.dat.\n");
+		exit(1);
+	}
+
+	int vetorEnd[numberEnd];
+	for (int i = 1;!feof(arq); ++i) {
+		numLinha = 0;
+		
+		result = fread(&numLinha, 4, 1, arq); 
+		if (result) {
+		
+			numLinha = conversion(numLinha);
+			vetorEnd[i] = numLinha;
+			printf("Transformado[%d] = %d\n",i, vetorEnd[i]);
 		}
 	}
+
 	fclose(arq);
-
-	for(int i=0 ; i < cont; i++){
-		printf("\n %d binary e igual a: %d ",i+1,vetIndex[i]);
-	}
-
-	return 0;
+	p = &vetorEnd[0];
+	return p;
 };
 
-
 void startCache(cacheConfig *AcessCache){
-	AcessCache->cache = (long unsigned int**) malloc(((AcessCache->numberSets)/AcessCache->associativity)*sizeof(long unsigned int*));
+	AcessCache->cache = (long unsigned int**) malloc((AcessCache->numberSets/AcessCache->associativity)*sizeof(long unsigned int*));
 	if (AcessCache->cache == NULL){
 		printf("Erro ao alocar Cache\n");
 		exit(1);
 	}
 		
-	for (long unsigned int i = 0; i <= AcessCache->numberSets; ++i)
-	AcessCache->cache[i] = (long unsigned int*) malloc(sizeof(long unsigned int));
+	for (int i = 0; i < AcessCache->numberSets; ++i)
+	AcessCache->cache[i] = (long unsigned int*) malloc((AcessCache->associativity)*sizeof(long unsigned int));
 
 	// Mexer aqui pois ira gerar vazamento de memoria;
 
-	for (long unsigned int i = 0; i < AcessCache->numberSets/AcessCache->associativity; ++i)
+	for (int i = 0; i < AcessCache->numberSets/AcessCache->associativity; ++i)
 		AcessCache->cache[i][0] = 0;
 
-	for (long unsigned int i = 0; i < AcessCache->numberSets/AcessCache->associativity; ++i){
-		for (long unsigned int j = 1; j <= AcessCache->associativity; ++j)
+	for (int i = 0; i < AcessCache->numberSets/AcessCache->associativity; ++i){
+		for (int j = 1; j <= AcessCache->associativity; ++j)
 			AcessCache->cache[i][j] = -1;
 	}	
 };
 
 
-void searchEnd(cacheConfig *AcessCache, long unsigned int *vetEnd, int cont){
+void searchEnd(cacheConfig *AcessCache){
 	// Acesso o primeiro endereco
-	int index=0, i=0;
+	long unsigned int index=0, i=0;
 	int flagEncontrouEnd = 0;
-	int NUMERO = cont;	
-	while(i < NUMERO){
+	while(i < AcessCache->operations){
 		// Verifico se é totalmente associativa e arrumo o index
 		if (AcessCache->numberSets == AcessCache->associativity)
 			index = 0;
 		else
-			index = indexMod(vetEnd[i], AcessCache->numberSets/AcessCache->associativity);	// Criar essa funcao ainda
+			index = indexMod(AcessCache->vetEnd[i], AcessCache->numberSets/AcessCache->associativity);	// Criar essa funcao ainda
 		// Verifico o Bit de Verificacao
 		if (AcessCache->cache[index][0] == 1){
 			// Significa que ha um dado aqui dentro
 			for (int j = 1; j <= AcessCache->associativity; ++j){
 				// Irei verificar em todas posicoes ao lado do bit de verificacao
-				if (AcessCache->cache[index][j] == *(vetEnd+i)){
+				if (AcessCache->cache[index][j] == AcessCache->vetEnd[i]){
 					AcessCache->hit++;
 					flagEncontrouEnd = 1;
 					break;
@@ -116,7 +115,7 @@ void searchEnd(cacheConfig *AcessCache, long unsigned int *vetEnd, int cont){
 					AcessCache->missConflito++;
 				}
 				// Escrever na cache o endereco que nao existe		
-				writeCache(AcessCache, index, *(vetEnd+i));
+				writeCache(AcessCache, index, AcessCache->vetEnd[i]);
 			}
 		}else{
 			AcessCache->miss++;
@@ -124,7 +123,7 @@ void searchEnd(cacheConfig *AcessCache, long unsigned int *vetEnd, int cont){
 			// Miss Compulsorio
 			AcessCache->missCompulsorio++;
 			// Escrever na cache o endereco que nao existe
-			writeCache(AcessCache, index, *(vetEnd+i));
+			writeCache(AcessCache, index, AcessCache->vetEnd[i]);
 		}
 		++i;
 	}
@@ -137,13 +136,13 @@ long unsigned int indexMod(long unsigned int value, long unsigned int mod){
 };
 
 
-void writeCache(cacheConfig *AcessCache, long unsigned int index, long unsigned int endValue){
+void writeCache(cacheConfig *AcessCache, long unsigned int index, int endValue){
 	int flagInsertPosicionNull = 0;
 	// Seto o bit de verificacao para 1
 	AcessCache->cache[index][0] = 1;
 	if (AcessCache->numberSets == AcessCache->associativity){
 		// Cache Totalmente associativa
-		for (long unsigned int j = 1; j <= AcessCache->associativity; ++j){
+		for (int j = 1; j <= AcessCache->associativity; ++j){
 			if (AcessCache->cache[index][j] == -1){
 				// Achou local disponivel e armazenou
 				AcessCache->cache[index][j] = endValue;
@@ -154,24 +153,27 @@ void writeCache(cacheConfig *AcessCache, long unsigned int index, long unsigned 
 
 		if (flagInsertPosicionNull == 0){
 			// Não tem lugar disponivel, aplica-se Rand
-			int positionRand = rand()%(AcessCache->associativity);
-			AcessCache->cache[0][positionRand] = endValue;
+			int positionRand = 1+(rand()%(AcessCache->associativity));
+			AcessCache->cache[index][positionRand] = endValue;
 		}
+
 	}else if (AcessCache->associativity == 1){
 		// Como e MP nao preciso percorrer as posicoes ao lado
 		AcessCache->cache[index][1] = endValue;
+
 	}else{
 		// Qualquer outra associatividade
-		for (long unsigned int k = 1; k <= AcessCache->associativity; ++k){
+		for (int k = 1; k <= AcessCache->associativity; ++k){
 			if (AcessCache->cache[index][k] == -1){
 				AcessCache->cache[index][k] = endValue;
 				flagInsertPosicionNull = 1;
 				break;
 			}
 		}
+
 		if (flagInsertPosicionNull == 0){
 			// Não tem lugar disponivel, aplica-se Rand
-			long int positionRand = rand()%(AcessCache->associativity);
+			int positionRand = 1+(rand()%(AcessCache->associativity));
 			AcessCache->cache[index][positionRand] = endValue;
 		}
 	}
@@ -220,16 +222,25 @@ void printResults(cacheConfig *AcessCache){
 	printf("--- Configuracoes da Cache ---\n");
 	printf("Numero de Conjuntos:             %lu\n", AcessCache->numberSets);
 	printf("Tamanho do Bloco:                %lu\n",AcessCache->blockSize);
-	printf("Associatividade:                 %lu\n\n",AcessCache->associativity);
+	printf("Associatividade:                 %lu\n",AcessCache->associativity);
+	printf("Tamanho da Cache:                %lu\n\n", AcessCache->sizeCache);
+	// printf("Tempo de Acerto na Cache:        1ns\n");
+	// printf("Penalidade por falta:            100ns\n\n");
 	printf("--- Funcoes executadas pelo simulador ---\n");
 	printf("Arquivo de Enderecos:            %s\n", AcessCache->nameArq);
-	printf("Numero de Operacoes:             \n\n"/*Tem que por a quantidade gerada aqui*/);
+	printf("Numero de Operacoes:             %lu\n\n", AcessCache->operations);
 	printf("--- Resultados Obtidos ---\n");
 	printf("Numero de HIT:                   %lu\n", AcessCache->hit);
 	printf("Numero de MISS:                  %lu\n", AcessCache->miss);
 	printf("Numero de Miss Compulsorio:      %lu\n", AcessCache->missCompulsorio);
 	printf("Numero de Miss Conflito:         %lu\n", AcessCache->missConflito);
 	printf("Numero de Miss capacidade:       %lu\n\n", AcessCache->missCapacidade);
-	printf("Tempo medio de acesso a Cache:\n\n");
+	// printf("Tempo medio de acesso a Cache:   %.2f\n\n", AcessCache->timeMed);
 	printf("--- Fim do Simulador ---\n\n\n");
 }
+
+// void memoryFree(cacheConfig *AcessCache){
+// 	for (int i = 0; i < AcessCache->numberSets; ++i)
+// 		free(AcessCache->cache[i]);
+// 	free(AcessCache->cache);
+// }
