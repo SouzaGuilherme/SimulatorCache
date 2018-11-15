@@ -16,6 +16,9 @@ typedef struct cacheComplete{
 	long unsigned int sizeCache;				// Tamanho total da cache
 	long unsigned int operations;				// Numero de operacoes executadas pelo simulador
 	int *vetEnd;								// Ponteiro de acesso ao vetor de inteiros que contem os enderecos
+	float timeMed;
+	float timeHit;
+	float fault;
 }cacheConfig;
 
 

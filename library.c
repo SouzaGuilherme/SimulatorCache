@@ -30,7 +30,6 @@ int* readEnd(cacheConfig *AcessCache){
 		result = fread(&numLinha, 4, 1, arq); 
 		numberEnd++;
 	}
-	printf("NUMBER ENDS = %d\n",numberEnd);
 	AcessCache->operations = numberEnd-1;
 	fclose(arq);
 
@@ -49,7 +48,6 @@ int* readEnd(cacheConfig *AcessCache){
 		
 			numLinha = conversion(numLinha);
 			vetorEnd[i] = numLinha;
-			printf("Transformado[%d] = %d\n",i, vetorEnd[i]);
 		}
 	}
 
@@ -59,37 +57,33 @@ int* readEnd(cacheConfig *AcessCache){
 };
 
 void startCache(cacheConfig *AcessCache){
+	int i=0, j=0;
 	AcessCache->cache = (long unsigned int**) malloc((AcessCache->numberSets/AcessCache->associativity)*sizeof(long unsigned int*));
 	if (AcessCache->cache == NULL){
 		printf("Erro ao alocar Cache\n");
 		exit(1);
 	}
-		
-	for (int i = 0; i < AcessCache->numberSets; ++i)
-	AcessCache->cache[i] = (long unsigned int*) malloc((AcessCache->associativity)*sizeof(long unsigned int));
-
-	// Mexer aqui pois ira gerar vazamento de memoria;
-
-	for (int i = 0; i < AcessCache->numberSets/AcessCache->associativity; ++i)
-		AcessCache->cache[i][0] = 0;
-
-	for (int i = 0; i < AcessCache->numberSets/AcessCache->associativity; ++i){
-		for (int j = 1; j <= AcessCache->associativity; ++j)
-			AcessCache->cache[i][j] = -1;
-	}	
+	
+	for (i = 0; i < (AcessCache->numberSets/AcessCache->associativity); i++){ //Percorre as linhas do Vetor de Ponteiros
+       AcessCache->cache[i] = (long unsigned int*) malloc((AcessCache->associativity+1) * sizeof(long unsigned int)); //Aloca um Vetor de Inteiros para cada posição do Vetor de Ponteiros.
+       for (j = 0; j < (AcessCache->associativity+1); j++){ //Percorre o Vetor de Inteiros atual.
+            AcessCache->cache[i][j] = -1; //Inicializa com -1.
+       }
+  	}		
 };
 
 
 void searchEnd(cacheConfig *AcessCache){
 	// Acesso o primeiro endereco
 	long unsigned int index=0, i=0;
-	int flagEncontrouEnd = 0;
 	while(i < AcessCache->operations){
+		int flagEncontrouEnd = 0;
 		// Verifico se é totalmente associativa e arrumo o index
-		if (AcessCache->numberSets == AcessCache->associativity)
+		if (AcessCache->numberSets == AcessCache->associativity){
 			index = 0;
-		else
-			index = indexMod(AcessCache->vetEnd[i], AcessCache->numberSets/AcessCache->associativity);	// Criar essa funcao ainda
+		}else{
+			index = indexMod(AcessCache->vetEnd[i], AcessCache->numberSets/AcessCache->associativity);
+		}
 		// Verifico o Bit de Verificacao
 		if (AcessCache->cache[index][0] == 1){
 			// Significa que ha um dado aqui dentro
@@ -105,11 +99,13 @@ void searchEnd(cacheConfig *AcessCache){
 				AcessCache->miss++;
 				// Tratar qual o miss
 				if (AcessCache->numberSets == AcessCache->associativity){
-					if (AcessCache->cache[index][AcessCache->associativity] != -1)
+					// Verifico se a ultima posicao ainda contem o valor de preenchimento da matriz
+					if (AcessCache->cache[index][AcessCache->associativity] != -1){
 						// Miss de capacidade
 						AcessCache->missCapacidade++;
-					else
+					}else{
 						AcessCache->missCompulsorio++;
+					}
 				}else{
 					// Miss de Conflito
 					AcessCache->missConflito++;
@@ -119,7 +115,6 @@ void searchEnd(cacheConfig *AcessCache){
 			}
 		}else{
 			AcessCache->miss++;
-			// Tratar qual o miss
 			// Miss Compulsorio
 			AcessCache->missCompulsorio++;
 			// Escrever na cache o endereco que nao existe
@@ -153,7 +148,10 @@ void writeCache(cacheConfig *AcessCache, long unsigned int index, int endValue){
 
 		if (flagInsertPosicionNull == 0){
 			// Não tem lugar disponivel, aplica-se Rand
-			int positionRand = 1+(rand()%(AcessCache->associativity));
+			int positionRand = 0;
+			while(positionRand == 0){
+				positionRand = (rand()%(AcessCache->associativity));
+			}
 			AcessCache->cache[index][positionRand] = endValue;
 		}
 
@@ -173,7 +171,10 @@ void writeCache(cacheConfig *AcessCache, long unsigned int index, int endValue){
 
 		if (flagInsertPosicionNull == 0){
 			// Não tem lugar disponivel, aplica-se Rand
-			int positionRand = 1+(rand()%(AcessCache->associativity));
+			int positionRand = 0;
+			while(positionRand == 0){
+				positionRand = (rand()%(AcessCache->associativity));
+			}
 			AcessCache->cache[index][positionRand] = endValue;
 		}
 	}
@@ -224,8 +225,6 @@ void printResults(cacheConfig *AcessCache){
 	printf("Tamanho do Bloco:                %lu\n",AcessCache->blockSize);
 	printf("Associatividade:                 %lu\n",AcessCache->associativity);
 	printf("Tamanho da Cache:                %lu\n\n", AcessCache->sizeCache);
-	// printf("Tempo de Acerto na Cache:        1ns\n");
-	// printf("Penalidade por falta:            100ns\n\n");
 	printf("--- Funcoes executadas pelo simulador ---\n");
 	printf("Arquivo de Enderecos:            %s\n", AcessCache->nameArq);
 	printf("Numero de Operacoes:             %lu\n\n", AcessCache->operations);
@@ -235,12 +234,8 @@ void printResults(cacheConfig *AcessCache){
 	printf("Numero de Miss Compulsorio:      %lu\n", AcessCache->missCompulsorio);
 	printf("Numero de Miss Conflito:         %lu\n", AcessCache->missConflito);
 	printf("Numero de Miss capacidade:       %lu\n\n", AcessCache->missCapacidade);
-	// printf("Tempo medio de acesso a Cache:   %.2f\n\n", AcessCache->timeMed);
+	AcessCache->timeMed = (float)AcessCache->miss/(float)AcessCache->operations;
+	printf("TEMPO : %.4f\n\n", AcessCache->timeMed);
+	
 	printf("--- Fim do Simulador ---\n\n\n");
 }
-
-// void memoryFree(cacheConfig *AcessCache){
-// 	for (int i = 0; i < AcessCache->numberSets; ++i)
-// 		free(AcessCache->cache[i]);
-// 	free(AcessCache->cache);
-// }
