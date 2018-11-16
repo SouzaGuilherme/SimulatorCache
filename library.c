@@ -1,5 +1,4 @@
 // Library.c the functions of library.h the simulator Cache
-
 #include<stdio.h>
 #include<string.h>
 #include<math.h>
@@ -178,53 +177,17 @@ void writeCache(cacheConfig *AcessCache, long unsigned int index, int endValue){
 			AcessCache->cache[index][positionRand] = endValue;
 		}
 	}
-
-	// if (AcessCache->associativity == 1){
-	// 	// Mapeamento Direto
-	// 	AcessCache->cache[index][1] = endValue;
-	// }else if(AcessCache->associativity >1 && AcessCache->associativity <=4){
-	// 	// Associatividade 2 e 4
-	// 	// Enquanto tiver lugar ele insere
-	// 	for (long unsigned int i = 0; i < AcessCache->associativity; ++i){
-	// 		if (AcessCache->cache[index][i] == -1){
-	// 			AcessCache->cache[index][i] = endValue;
-	// 			flagInsertPosicionNull = 1;
-	// 			break;
-	// 		}
-	// 	}
-	// 	// Caso nao tenha lugar ele randoniza uma posicao e insere
-	// 	if (flagInsertPosicionNull == 0){
-	// 		int j = rand()%(AcessCache->associativity);
-	// 		AcessCache->cache[index][j+1] = endValue;
-	// 	}
-	// }else{
-	// 	// Totalmente Associativa
-	// 	for (int j = 1; j <= AcessCache->associativity; ++j){
-	// 		if (AcessCache->cache[0][j] != -1){
-	// 			AcessCache->cache[0][j] = endValue;
-	// 			flagInsertPosicionNull = 1;
-	// 			break;
-	// 		}
-	// 	}
-	// 	if (flagInsertPosicionNull == 0){
-	// 		if (AcessCache->cache[0][AcessCache->associativity] != -1 ){
-	// 			// Cache cheia, logo escrevo numa posicao randomica
-	// 			long int positionRand = rand()%(AcessCache->associativity);
-	// 			AcessCache->cache[0][positionRand] = endValue;
-	// 		}
-
-	// 	}
-	// }
 };
 
 
 void printResults(cacheConfig *AcessCache){
-	printf("\n\nSimulador NOME DO SIMULADOR\n\n");
+	system("reset");
+	printf("\nSimulador NOME DO SIMULADOR\n\n");
 	printf("--- Configuracoes da Cache ---\n");
 	printf("Numero de Conjuntos:             %lu\n", AcessCache->numberSets);
 	printf("Tamanho do Bloco:                %lu\n",AcessCache->blockSize);
 	printf("Associatividade:                 %lu\n",AcessCache->associativity);
-	printf("Tamanho da Cache:                %lu\n\n", AcessCache->sizeCache);
+	printf("Tamanho da Cache:                %lub\n\n", AcessCache->sizeCache);
 	printf("--- Funcoes executadas pelo simulador ---\n");
 	printf("Arquivo de Enderecos:            %s\n", AcessCache->nameArq);
 	printf("Numero de Operacoes:             %lu\n\n", AcessCache->operations);
@@ -234,8 +197,6 @@ void printResults(cacheConfig *AcessCache){
 	printf("Numero de Miss Compulsorio:      %lu\n", AcessCache->missCompulsorio);
 	printf("Numero de Miss Conflito:         %lu\n", AcessCache->missConflito);
 	printf("Numero de Miss capacidade:       %lu\n\n", AcessCache->missCapacidade);
-	AcessCache->timeMed = (float)AcessCache->miss/(float)AcessCache->operations;
-	printf("TEMPO : %.4f\n\n", AcessCache->timeMed);
 	
 	printf("--- Fim do Simulador ---\n\n\n");
 }

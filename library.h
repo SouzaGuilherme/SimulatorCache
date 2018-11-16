@@ -3,7 +3,7 @@
 #define library_h_
 
 typedef struct cacheComplete{
-	long unsigned int** cache;					// Ponteiro uma matrix
+	long unsigned int** cache;					// Ponteiro uma matriz
 	long unsigned int numberSets;				// Numero de conjuntos
 	long unsigned int blockSize;				// Tamanho do bloco
 	long unsigned int associativity;			// Associatividade da cache
@@ -16,9 +16,6 @@ typedef struct cacheComplete{
 	long unsigned int sizeCache;				// Tamanho total da cache
 	long unsigned int operations;				// Numero de operacoes executadas pelo simulador
 	int *vetEnd;								// Ponteiro de acesso ao vetor de inteiros que contem os enderecos
-	float timeMed;
-	float timeHit;
-	float fault;
 }cacheConfig;
 
 
@@ -93,7 +90,5 @@ int conversion(int val);
 	-A Funcao retornara um ponteiro para vetor de inteiros.
 */
 int* readEnd(cacheConfig *AcessCache);
-
-// void memoryFree(cacheConfig *AcessCache);
 
 #endif

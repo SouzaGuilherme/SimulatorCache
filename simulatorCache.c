@@ -33,17 +33,12 @@ int main(int argc, char* argv[]){
 	AcessCache.missConflito = 0;	
 	AcessCache.missCapacidade = 0;
 	AcessCache.sizeCache = AcessCache.numberSets*AcessCache.blockSize*AcessCache.associativity;	
-	AcessCache.timeMed = 0;
+
 	//Le os enderecos passados o os converte para inteiros
 	AcessCache.vetEnd = readEnd(&AcessCache);
-	AcessCache.timeHit = 1.0;
-	AcessCache.fault = 20.0;
 	
 	// Pesquiso o Endereco
 	searchEnd(&AcessCache);
-	// Calculo do tempo medio
-	AcessCache.timeMed = ((float)AcessCache.miss/(float)AcessCache.operations);
-	AcessCache.timeMed = 0.52f*20.0f;
 	
 	// printo o resultado
 	printResults(&AcessCache); 
