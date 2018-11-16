@@ -5,28 +5,28 @@ Cache simulator developed for computer architecture discipline 2.
 [Flex Grid]()
 
 ## Relatorio
-Foi desenvolvido 3 arquivos os quais sao essenciais para a execucao do trabalho aqui apresentado:
+Foi desenvolvido 3 arquivos os quais são essenciais para a execução do trabalho aqui apresentado:
 1. SimulatorCache.c
 2. library.c
 3. library.h
 
-Um executavel do simulador tambem foi adicionado para que nao haja necessidade de recompilar o codigo novamente:
+Um executável do simulador também foi adicionado para que não haja necessidade de recompilar o código novamente:
 * SimulatorCacheExecutavel
 
 **Execucao do simulador**
 
-Para executar o limulador basta por linha de comando passar a seguinte instrucao
+Para executar o simulador basta por linha de comando passar a seguinte instrução:
 
 > ./SimulatorCacheExecutavel
 
-Dessa forma sera executado o simulador no modo default onde ele contem as seguintes configuracoes:
+Dessa forma será  executado o simulador no modo default onde ele contém as seguintes configurações:
 
 * Numero de conjuntos    = 1024.
 * Tamanho do bloco     	 = 4.
 * Associatividade    	 = 1.
 * Arquivo de leitura 	 = arqBinario1.dat.
 
-O simulador permite a configuracao da cache da forma que o usuario bem desejar, bastando passar por linha de comando as seguintes instrucoes
+O simulador permite a configuração da cache da forma que o usuário bem desejar, bastando passar por linha de comando as seguintes instruções
 
 > ./SimulatorCacheExecutavel <Numero_de_Conjuntos> <Tamanho_do_Bloco> <Associatividade> <Nome_do_Arquivo>
 
@@ -34,9 +34,9 @@ O simulador permite a configuracao da cache da forma que o usuario bem desejar, 
 
 > ./SimulatorCacheExecutavel 2048 4 2 arquivoBinario2.dat.
 
-*Com a falta de alguns dos argumentos o simulador nao executara*.
+*Com a falta de algum dos argumento o simulador não executará*.
 
-O simulador conta com 5 aquivos binarios diferentes em enderecos e quantidade para que possa ser usado, dando ainda a possibilidade de o usuario por conta propria inserir quantos mais desejados.
+O simulador conta com 5 arquivos binários diferentes em endereços e quantidade para que possa ser usado, dando ainda a possibilidade de o usuário por conta própria inserir quantos mais desejados.
 
 1. arqBinario1.dat.
 2. arqBinario2.dat.
@@ -44,73 +44,72 @@ O simulador conta com 5 aquivos binarios diferentes em enderecos e quantidade pa
 4. arqBinario4.dat.
 5. arqBinario5.dat.
 
-_Sendo uma relacao quantitativa de arqBinario1.dat < arqBinario2.dat < ... < arqBinario5.dat_
+_Sendo uma relacao quantitativa de arqBinario1.dat < arqBinario2.dat < ... < arqBinario5.dat_.
 
 **Descricao do funcionamento do simulador**
 
-O simulador contem uma estrutura a qual contem todos os dados os quais sera preciso para sua execucao. A cache foi pensada como uma matriz NxM onde N = Numeros_de_conjuntos e M = Associatividade + 1.
-Tal matriz trabalha com inteiros, para maior facilidade no tratamento dos enderecos, pois sabe-se que utilizando a funcao _mod_ em um inteiro decimal, ela nos retornara a posicao a qual o endereco devera ocupar. Dessa forma quando um endereco e solicitado basta chamar a funcao mod como dito anteriormente, e verificar se o endereco se encontra nessa posicao na cache (a matriz explicada acima) caso o endereco esteja la, um hit e contabilizado, podendo proceguir para as proximas operacoes. Porem se o endereco nao estiver la, um miss sera contabilizado e tratado entre os 3 tipos de misses: Compulsorio, conflito e capacidade. Logo apos tal tratamento sera efetuado a escrita do endereco na cache na posicao a qual ela devera ocupar, a posicao sera dada de acordo com a configuracao da cache.
-Pois se a cache for totalmente associativa, pode-se escrever em qualquer posicao dentro do bloco ate sua capacidade ser preenchida, quando a capacidade maxima e atingida, o endereco passa a ser escrita em uma posicao randomica (politica de substituicao randomica).
-Se a cache for mapeamento direto, sera necessario somente escrever na posicao dada pela funcao _mod_, caso haja um endereco la dentro nao ha necessidade de tomar alguma providencia, pois necessita somente realizar a substituicao do endereco.
-Caso seja entre os dois estremos (mapeamento direto e totalmente associativo), verifico de na posicao retornado pela funcao _mod_ ha espaco dentro do bloco para escrita, se houver, escrevo em tal posicao livre, caso nao tenha, realizo a funcao randomica que me dara uma posicao aleatoria dentro do bloco.
+O simulador possui uma estrutura que contém todos os dados os quais será preciso para sua execução. A cache foi pensada como uma matriz NxM onde N = Numeros_de_conjuntos e M = Associatividade + 1.
+Tal matriz trabalha com inteiros, para maior facilidade no tratamento dos endereços, pois sabe-se que utilizando a função _mod_ em um inteiro decimal, ela nos retornara a oposição a qual o endereço devera ocupar. Dessa forma quando um endereço é solicitado basta chamar a função mod como dito anteriormente, e verificar se o endereço se encontra nessa posição na cache (a matriz explicada acima) caso o endereço esteja lá, um hit é contabilizado, podendo prosseguir para as próximas operações. porém se o endereço não estiver lá, um miss será contabilizado e tratado entre os 3 tipos de misses: Compulsório, conflito e capacidade. Logo após tal tratamento, será efetuado a escrita do endereço na cache na posição a qual ela devera ocupar, a posição será dada de acordo com a configuração da cache.
+Pois se a cache for totalmente associativa, pode-se escrever em qualquer posição dentro do bloco até sua capacidade ser preenchida, quando a capacidade máxima é atingida, o endereço passa a ser escrito em uma posição randômica (politica de substituição randômica).
+Se a cache for mapeamento direto, será necessário somente escrever na posição dada pela função _mod_, ou seja, caso haja um endereço lá dentro, não será preciso calcular uma nova posição para ser escrita, basta somente realizar a substituição do endereço.
+Caso seja entre os dois extremos (mapeamento direto e totalmente associativo), verifico se na posição retornada pela função _mod_ há espaço dentro do bloco para escrita, se houver, escrevo em tal posição livre, caso não tenha, realizo a função randômica que me dará uma posição aleatória dentro do bloco para a escrita.
 
 **Descricao dos codigos disponiveis**
 
 **simulatorCache.c**
 
-O arquivo simulatorCache.c contem a funcao main do programa somente, onde realiza os seguintes passos:
+O arquivo simulatorCache.c contém a função main do programa somente, onde realiza os seguintes passos:
 
-1. Recebe por parametro as configuracoes desejada pelo usuario 
-ou seta o as configuracoes default da cache.
-2. Realiza a chamada da funcao que realiza a leitura dos aquivos (sera falado posteriormente).
-3. Realiza a chamada da funcao que realiza a procura do endereco na cache (sera falado posteriormente).
-4. Realiza a chamada da funcao que realiza a impressao dos resultados obtidos ao excutar o simular.
+1. Recebe por parâmetro as configurações desejadas pelo usuário
+ou seta o as configurações default da cache.
+2. Realiza a chamada da função que realiza a leitura dos arquivos (será falado posteriormente).
+3. Realiza a chamada da função que realiza a procura do endereço na cache (será falado posteriormente).
+4. Realiza a chamada da função que realiza a impressão dos resultados obtidos ao executar o simular. 
 
 **library.h**
 
-O arquivo library.h contem os headers das nossas funcoes alem de ser o arquivo o qual as explica, para maior facilidade tais comentario serao aqui descorridos ao usuario.
+O arquivo library.h contém os headers das nossas funções além de ser o arquivo o qual as explica, para maior facilidade tais comentários serão aqui discorridos ao usuário.
 
 > typedef struct cacheComplete cacheConfig
 
-contem todos os dados relevantes sobre a cache, como:
+Contém todos os dados relevantes sobre a cache, como:
 
-* As configuracoes passadas pelo usuario.
-* Resultados obtidos apartir da execucao do simulador.
+* As configurações passadas pelo usuário.
+* Resultados obtidos a partir da execução do simulador.
 
 > void startCache(cacheConfig \*AcessCache).
 
-Funcao encarregada de alocar nossa cache, com as configuracoes default ou passadas pelo usuario, criando um matriz de numero_de_conjunto x associatividade, onde sera possivel procurar e escrever os enderecos passado pelos arquivos binarios.
+Função encarregada de alocar a cache, com as configurações default ou passadas pelo usuário, criando um matriz de numero_de_conjunto x associatividade +1, onde será possível procurar e escrever os endereços passados pelos arquivos binários.
 
 >void searchEnd(cacheConfig \*AcessCache).
 
-Funcao encarregada de realizar a procura de um determinado endereco ligo do arquivo binario. Sendo tambem a funcao com o papel mais importante, pois nela sera tratado:
+Função encarregada de realizar a procura de um determinado endereço lido do arquivo binário. Sendo também a função com o papel mais importante, pois nela será tratado:
 
 * Hit na cache.
 * Miss na cache.
 * Tipos de misses gerado.
-* chama a funcao a qual desempenhada a verificacao de qual linha determinado endereco deve ocupar.
-* Chama a funcao a qual desempenha a escrita de determinado endereco na cache caso ele venha a nao ser encontrado.
+* Chama a função a qual desempenhada a verificação de qual linha determinado endereço deve ocupar.
+* Chama a função a qual desempenha a escrita de determinado endereço na cache caso ele venha a não ser encontrado.
 
-Como dito e a funcao mais importante do codigo, pois ela que regis o fluxo e comportamento do programa.
+Como dito é a função mais importante do código, pois ela que rege o fluxo e comportamento do programa. 
 
 >long unsigned int indexMod(long unsigned int value, long unsigned int mod).
 
-Funcao encarregada de realizar a oepracao **_mod_**, entre o endereco e as n_entradas que a cache possui.
+Função encarregada de realizar a operação **_mod_**, entre o endereço e as n_entradas que a cache possui. 
 
 >void writeCache(cacheConfig \*AcessCache, long unsigned int index, int endValue).
 
-Funcao encarregada de realizar a escrita de determinado endereco o qual nao foi encontrado pela funcao _searchEn()_. Seu papel e realizar a atualizacao do bit de verificao da cache para 1 (de forma a indicar que ha um endereco nessa entrada da cache), e escrever o dado na posicao correta.
-Quando se tempo um maior nivel de associatividade como em alguns casos que podem ser testado no simulador, esta funcao se encarrega de encontrar o lugar adequado no bloco e na cache e quando necessario substituir algum dados existente na cache, realiza tambem a escolha _randomica_ da posicao a qual o endereco passara a ocupar.
+Função encarregada de realizar a escrita de determinado endereço o qual não foi encontrado pela função _searchEnd()_. Seu papel é realizar a atualização do bit de verificao da cache para 1 (de forma a indicar que há um endereço nessa entrada da cache), e escrever o dado na posição correta.
+Quando se tem um maior nível de associatividade como em alguns casos que podem ser testado no simulador, esta função se encarrega de encontrar o lugar adequado no bloco e na cache e quando necessário substituir algum dado existente na cache, realiza também a escolha _randomica_ da posição a qual o endereço passara a ocupar. 
 
 > void printResults(cacheConfig \*AcessCache).
 
-Funcao encarregada de apenas exibir na tela as configuracoes da cache, os dados os quais o simulador fez uso para sua execucao e os resultados obtidos apos o termino da mesma.
+Função encarregada de apenas exibir na tela as configurações da cache, os dados os quais o simulador fez uso para sua execução e os resultados obtidos após o termino da mesma.
 
 >int conversion(int val).
 
-Funcao encarregada de realizar a conversao do endereco lido do arquivo, tal acao se fez necessario pelos arquivos se encontrarem em _big endian_, dessa forma os enderecos passao a ser tratados como inteiros decimais.
+Função encarregada de realizar a conversão do endereço lido do arquivo, tal ação se fez necessário pelos arquivos se encontrarem em _big endian_, dessa forma os endereços passão a ser tratados como inteiros decimais.
 
 >int* readEnd(cacheConfig \*AcessCache).
 
-Funcao encarregado de realizar a leitura dos arquivos binarios, chamando a funcao _conversion()_ para tratamentos dos dados, apos armazenando-os em um vetor para que possa ser utlizado como inteiros decimais durante a execucao do simulador.
-
+Função encarregado de realizar a leitura dos arquivos binários, chamando a função _conversion()_ para tratamentos dos dados, após armazenando-os em um vetor para que possa ser utilizado como inteiros decimais durante a execução do simulador.
